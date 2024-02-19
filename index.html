@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="https://cdn3.iconfinder.com/data/icons/brain-games/1042/Tic-Tac-Toe-Game.png">
+    <title>Tic Tac Toe</title>
+    <link rel="shortcut icon" href="tic-tac-toe.png" type="image/x-icon">
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
+        :root{
+            --bg-color: rgb(0, 0, 0);
+            --second-bg-color:#000000;
+            --text-color:#ffff;
+            --main-color: rgb(53, 225, 255);
+        }
+
+        body {
+            font-family: "Roboto", sans-serif;
+            background-color: var(--bg-color);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        section {
+            text-align: center;
+            border-radius: 10px;
+            width: 400px;
+            background-color: var(--second-bg-color);
+            padding: 20px;
+        }
+        .game-title {
+            padding-top: 20px;
+            color: var(--main-color);
+        }
+        .game--container {
+            display: grid;
+            gap: 4px;
+            grid-template-columns: repeat(3, auto);
+            width: 150px;
+            margin: 120px;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+        .cell {
+            font-family: "Roboto", sans-serif;
+            width: 50px;
+            height: 50px;
+            border: 1px solid var(--main-color);
+            border-radius: 4px;
+            cursor: pointer;
+            line-height: 50px;
+            font-size: 28px;
+            color: var(--main-color);
+        }
+        button {
+            margin-bottom: 20px;
+            padding: 8px;
+            font-size: 28px;
+            border: none;
+            border-radius: 50%;
+            color: var(--text-color);
+            background-color: var(--main-color);
+            cursor: pointer;
+        }
+        button:hover {
+            transition: 0.25s;
+            background-color: rgb(43, 185, 210);
+        }
+        .win {
+            background-color: var(--main-color);
+            color: var(--text-color);
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+    <section>
+        <h1 class="game-title">Tic Tac Toe</h1>
+        <div class="game--container">
+            <div data-cell-index="0" class="cell"></div>
+            <div data-cell-index="1" class="cell"></div>
+            <div data-cell-index="2" class="cell"></div>
+            <div data-cell-index="3" class="cell"></div>
+            <div data-cell-index="4" class="cell"></div>
+            <div data-cell-index="5" class="cell"></div>
+            <div data-cell-index="6" class="cell"></div>
+            <div data-cell-index="7" class="cell"></div>
+            <div data-cell-index="8" class="cell"></div>
+        </div>
+        <h3 class="game--status"></h3>
+        <button class="ri-restart-line game--restart">Restart</button>
+        
+    </section>
+    <script>
+        const statusDisplay = document.querySelector(".game--status");
+        let lastMoveXIndex = null;
+        let lastMoveOIndex = null;
+    
+        let gameActive = true;
+    
+        let currentPlayer = "X";
+    
+        let gameState = ["", "", "", "", "", "", "", "", ""];
+    
+        const winningMessage = () => `Player ${currentPlayer} has won!`;
+        const drawMessage = () => `Game ended in a draw!`;
+        const currentPlayerTurn = () =>
+            `<span style="color: white;">It's ${currentPlayer}'s turn</span>`;
+    
+        statusDisplay.innerHTML = currentPlayerTurn();
+    
+        document
+            .querySelectorAll(".cell")
+            .forEach((cell) => cell.addEventListener("click", handleCellClick));
+        document
+            .querySelector(".game--restart")
+            .addEventListener("click", handleRestartGame);
+    
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+    
+        function handleCellClick(clickedCellEvent) {
+            const clickedCell = clickedCellEvent.target;
+            const clickedCellIndex = parseInt(
+                clickedCell.getAttribute("data-cell-index")
+            );
+    
+            if (gameState[clickedCellIndex] !== "" || !gameActive) {
+                return;
+            }
+    
+            handleCellPlayed(clickedCell, clickedCellIndex);
+            handleResultValidation();
+            if (currentPlayer === 'X') {
+                lastMoveXIndex = clickedCellIndex;
+            } else {
+                lastMoveOIndex = clickedCellIndex;
+            }
+        }
+    
+        function handleCellPlayed(clickedCell, clickedCellIndex) {
+            gameState[clickedCellIndex] = currentPlayer;
+            clickedCell.innerHTML = currentPlayer;
+        }
+    
+        function handleResultValidation() {
+            let roundWon = false;
+            let winningCombo;
+            for (let i = 0; i < winningConditions.length; i++) {
+                const winCondition = winningConditions[i];
+                let a = gameState[winCondition[0]];
+                let b = gameState[winCondition[1]];
+                let c = gameState[winCondition[2]];
+                if (a === "" || b === "" || c === "") {
+                    continue;
+                }
+                if (a === b && b === c) {
+                    roundWon = true;
+                    winningCombo = winCondition;
+                    break;
+                }
+            }
+            if (roundWon) {
+                statusDisplay.innerHTML = `<span style="color: #98fb98;">${winningMessage()}</span>`;
+                gameActive = false;
+                highlightWinningCombo(winningCombo);
+                return;
+            }
+    
+            let roundDraw = !gameState.includes("");
+            if (roundDraw) {
+                statusDisplay.innerHTML = `<span style="color: orange;">${drawMessage()}</span>`;
+                gameActive = false;
+                return;
+            }
+    
+            handlePlayerChange();
+        }
+    
+        function handlePlayerChange() {
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            statusDisplay.innerHTML = currentPlayerTurn();
+            if (currentPlayer === "O") {
+                setTimeout(makeAIMove, 500); // Introduce a slight delay for AI move
+            }
+        }
+    
+        function handleRestartGame() {
+            gameActive = true;
+            currentPlayer = "X";
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            statusDisplay.innerHTML = currentPlayerTurn();
+            document.querySelectorAll(".cell").forEach((cell) => (cell.innerHTML = ""));
+            document
+                .querySelectorAll(".cell")
+                .forEach((cell) => cell.classList.remove("win"));
+            lastMoveXIndex = null;
+            lastMoveOIndex = null;
+        }
+    
+        
+    
+        function makeAIMove() {
+            let bestScore = -Infinity;
+            let bestMove;
+            for (let i = 0; i < 9; i++) {
+                if (gameState[i] === "") {
+                    gameState[i] = "O";
+                    let score = minimax(gameState, 0, false);
+                    gameState[i] = "";
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            gameState[bestMove] = "O";
+            document.querySelector(`[data-cell-index="${bestMove}"]`).innerHTML = "O";
+            handleResultValidation();
+        }
+    
+        function minimax(board, depth, isMaximizing) {
+            let result = checkWinner(board);
+            if (result !== null) {
+                return result === "X" ? -10 + depth : result === "O" ? 10 - depth : 0;
+            }
+    
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "O";
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = "";
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "X";
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = "";
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+    
+        function checkWinner(board) {
+            for (let combo of winningConditions) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            return board.includes("") ? null : "tie";
+        }
+    
+        function highlightWinningCombo(combo) {
+            const [a, b, c] = combo;
+            document.querySelector(`[data-cell-index="${a}"]`).classList.add("win");
+            document.querySelector(`[data-cell-index="${b}"]`).classList.add("win");
+            document.querySelector(`[data-cell-index="${c}"]`).classList.add("win");
+        }
+    </script>
+    
+    
+
+</body>
+</html>
